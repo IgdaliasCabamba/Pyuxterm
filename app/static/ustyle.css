@@ -1,0 +1,36 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    border:0;
+    vertical-align: baseline;
+}
+
+html, body {
+    min-height: 100vh;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--main-bg-color);
+}
+
+#terminal{
+    width: 100vw;
+    min-height: 100vh;
+    max-height: 101vh;
+}
+
+::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+::-webkit-scrollbar-track {
+    background-color: var(--scrollbar-bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb-bg-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover-bg-color);
+}

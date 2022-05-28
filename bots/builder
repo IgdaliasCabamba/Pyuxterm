@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source ~/Pyuxterm/uenv/bin/activate
+cd ~/Pyuxterm/app
+pyinstaller pyuterm.spec

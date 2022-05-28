@@ -1,0 +1,7 @@
+uenv/
+res/tests/
+**/build
+**/dist
+**/__pycache__
+*.pyi
+*.pyc
