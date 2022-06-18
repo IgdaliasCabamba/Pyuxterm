@@ -5,7 +5,7 @@ HTML = """
     <title>Uterm</title>
     <style>
       :root {
-        --main-bg-color: #212121;
+        --main-bg-color: {{cssvar_background}};
         --scrollbar-bg-color:transparent;
         --scrollbar-thumb-bg-color:rgba(250, 250, 250, 0.4);
         --scrollbar-thumb-hover-bg-color:rgb(250, 250, 250, 0.8)
@@ -21,7 +21,6 @@ HTML = """
     />
   </head>
   <body>
-    
     <div id="terminal"></div>
 
     <!-- xterm -->
@@ -48,7 +47,8 @@ HTML = """
       term.resize(15, 50);
       fit.fit();
       
-      term.setOption('theme', { background: '#212121' });
+      //https://xtermjs.org/docs/api/terminal/interfaces/itheme/
+      term.setOption('theme', {{theme | safe}});
 
       term.onData((data) => {
         console.log("key pressed in browser:", data);
@@ -81,6 +81,7 @@ HTML = """
 
       const wait_ms = 50;
       window.onresize = debounce(fitToscreen, wait_ms);
+      fitToscreen()
     </script>
   </body>
 </html>

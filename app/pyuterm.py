@@ -1,6 +1,6 @@
 import sys
 sys.dont_write_bytecode = True
-
+import pprint
 import os
 
 if getattr(sys, "frozen", False):
@@ -26,14 +26,17 @@ os.environ["UTERM_TEMPLATES_PATH"] = TEMPLATES_PATH
 
 from aiohttp import web
 import socketio
-
+import aiohttp_jinja2
+import jinja2
 import src.urequirements as urequirements
 import src.uterm as uterm
+import hjson
 
 urequirements.main()
 
 usocket = socketio.AsyncServer()
 app = web.Application()
+aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(TEMPLATES_PATH))
 usocket.attach(app)
 usocket_config = dict()
 
@@ -47,10 +50,18 @@ async def read_and_forward_pty_output():
         if output:    
             await usocket.emit("pty-output", {"output": output}, namespace="/pty")
 
+@aiohttp_jinja2.template('index.html')
 async def index(request):
     """Serve the client-side application."""
-    with open(os.path.join(TEMPLATES_PATH, 'index.html')) as f:
-        return web.Response(text=f.read(), content_type='text/html')
+    #with open(os.path.join(TEMPLATES_PATH, 'index.html')) as f:
+        #return web.Response(text=f.read(), content_type='text/html')
+
+    theme = hjson.loads(usocket_config["theme"])
+    bg_color = "#000000"
+    if "background" in theme.keys():
+        bg_color = theme["background"]
+
+    return {'theme': usocket_config["theme"], "cssvar_background":bg_color}
 
 @usocket.on("pty-input", namespace="/pty")
 async def pty_input(sid, data):
@@ -69,12 +80,14 @@ async def connect(sid,environ):
     terminal_api.spawn(usocket_config["cmd"])
     usocket.start_background_task(target=read_and_forward_pty_output)
 
-def run_new_term(command:str = "python3", host:str="127.0.0.1", port:int=9990, command_args:str=""):    
+def run_new_term(command:str = "python3", host:str="127.0.0.1", port:int=9990, command_args:str="", theme:str="default"):
     usocket_config["cmd"] = uterm.TermUtils.get_split_command(command, command_args)
+    usocket_config["theme"] = uterm.TermUtils.get_theme(theme.lower())
     web.run_app(app, port = port, host = host)
 
-app.router.add_static('/static', STATIC_PATH)
-app.router.add_get('/', index)
+def list_all_themes():
+    for theme in uterm.THEMES.keys():
+        print(theme)
 
 def main():
     import argparse
@@ -104,10 +117,24 @@ def main():
                         help="Enter args to bin",
                         default="",
                         type = str)
-     
-    args=parser.parse_args()
+    
+    parser.add_argument('-t',
+                        '--theme',
+                        help="Enter a theme to uxterm",
+                        default="default",
+                        type = str)
+    
+    parser.add_argument('--list-themes', help="List all themes and exit", action='store_true')
 
-    sys.exit(run_new_term(args.command, args.host, args.port, args.binargs))
+    args=parser.parse_args()
+    
+    if args.list_themes:
+        sys.exit(list_all_themes())    
+
+
+    sys.exit(run_new_term(args.command, args.host, args.port, args.binargs, args.theme))
 
 if __name__ == '__main__':
+    app.router.add_static('/static', STATIC_PATH)
+    app.router.add_get('/', index)
     main()

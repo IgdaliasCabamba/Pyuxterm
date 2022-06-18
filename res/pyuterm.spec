@@ -35,8 +35,9 @@ hidden_libs = [
     ]
 
 app_resources = [
-    ( '/static', 'static' ),
-    ( '/templates', 'templates'),
+    ( 'static', 'static' ),
+    ( 'templates', 'templates'),
+    ( 'settings', 'settings'),
 ]
 
 a = Analysis(

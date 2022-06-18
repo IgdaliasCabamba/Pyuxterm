@@ -1,5 +1,6 @@
 uenv/
 res/tests/
+res/local_data/
 **/build
 **/dist
 **/__pycache__
