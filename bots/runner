@@ -1,0 +1,6 @@
+#!/bin/bash
+
+source ~/Ideas/Pyuxterm/pyenv/bin/activate
+cd ~/Ideas/Pyuxterm
+./bots/builder #| tee build/build.app.log 
+./dist/pyuxterm

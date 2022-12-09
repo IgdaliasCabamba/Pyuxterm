@@ -1,5 +1,0 @@
-#!/bin/bash
-
-source ~/Pyuxterm/uenv/bin/activate
-cd ~/Pyuxterm/app
-pyi-makespec --onefile pyuterm.py

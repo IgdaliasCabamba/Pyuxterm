@@ -8,9 +8,12 @@ build_exe_options = {
         "src.uterm",
         "src.urequirements",
         "src.static_files",
-        "pyuterm",
+        "_system",
+        "server",
+        "main",
 
         "aiohttp",
+        "aiohttp_jinja2",
         "aiosignal",
         "altgraph",
         "async_timeout",
@@ -18,8 +21,10 @@ build_exe_options = {
         "bidict",
         "certifi",
         "charset_normalizer",
+        "click",
         "engineio",
         "frozenlist",
+        "hjson",
         "idna",
         "importlib_metadata",
         "multidict",
@@ -27,7 +32,10 @@ build_exe_options = {
         "requests",
         "urllib3",
         "yarl",
-        "zipp"
+        "zipp",
+        
+        "engineio.async_drivers.aiohttp",
+        "engineio.async_aiohttp"
     ],
     "excludes": ["static","templates"]}
 
@@ -36,7 +44,7 @@ base = None
 setup(
     name="pyuterm",
     version="0.1",
-    description="Test",
+    description="Pyuxterm - A powerful cross platform Terminal emulator",
     options={"build_exe": build_exe_options},
-    executables=[Executable("pyuterm.py", base=base)],
+    executables=[Executable("app/__main__.py", base=base)],
 )

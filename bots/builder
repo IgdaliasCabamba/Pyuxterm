@@ -1,5 +1,11 @@
 #!/bin/bash
 
-source ~/Pyuxterm/uenv/bin/activate
-cd ~/Pyuxterm/app
-pyinstaller pyuterm.spec
+source ~/Ideas/Pyuxterm/pyenv/bin/activate
+cd ~/Ideas/Pyuxterm
+pyinstaller build.spec
+
+#rm -rfv ~/Ideas/Pyuxterm/dist && mkdir ~/Ideas/Pyuxterm/dist
+#rm -rfv ~/Ideas/Pyuxterm/build && mkdir ~/Ideas/Pyuxterm/build
+
+#mv ~/Ideas/Pyuxterm/app/dist ~/Ideas/Pyuxterm/
+#mv ~/Ideas/Pyuxterm/app/build ~/Ideas/Pyuxterm/

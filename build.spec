@@ -8,9 +8,12 @@ hidden_libs = [
         "src.uterm",
         "src.urequirements",
         "src.static_files",
-        "pyuterm",
+        "_system",
+        "server",
+        "main",
 
         "aiohttp",
+        "aiohttp_jinja2",
         "aiosignal",
         "altgraph",
         "async_timeout",
@@ -21,6 +24,7 @@ hidden_libs = [
         "click",
         "engineio",
         "frozenlist",
+        "hjson",
         "idna",
         "importlib_metadata",
         "multidict",
@@ -35,13 +39,13 @@ hidden_libs = [
     ]
 
 app_resources = [
-    ( 'static', 'static' ),
-    ( 'templates', 'templates'),
-    ( 'settings', 'settings'),
+    ( 'app/static', 'static' ),
+    ( 'app/templates', 'templates'),
+    ( 'app/settings', 'settings'),
 ]
 
 a = Analysis(
-    ['pyuterm.py'],
+    ['app/__main__.py'],
     pathex=[],
     binaries=[],
     datas=app_resources,
@@ -60,27 +64,21 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
     [],
-    exclude_binaries=True,
-    name='pyuterm',
+    name='pyuxterm',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
     console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-)
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='pyuterm',
 )
