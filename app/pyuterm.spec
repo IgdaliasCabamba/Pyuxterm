@@ -11,6 +11,7 @@ hidden_libs = [
         "pyuterm",
 
         "aiohttp",
+        "aiohttp_jinja2",
         "aiosignal",
         "altgraph",
         "async_timeout",
@@ -21,6 +22,7 @@ hidden_libs = [
         "click",
         "engineio",
         "frozenlist",
+        "hjson",
         "idna",
         "importlib_metadata",
         "multidict",

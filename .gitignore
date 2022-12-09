@@ -1,4 +1,4 @@
-uenv/
+pyenv/
 res/tests/
 res/local_data/
 **/build
