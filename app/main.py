@@ -1,11 +1,13 @@
 from _system import *
 from server import *
 
+app.on_startup.append(on_startup)
 app.router.add_static('/static', STATIC_PATH)
 app.router.add_get('/', index)
 app.router.add_post('/', evalRPC)
+app.router.add_get('/xterm/theme/{theme_name}', XtermRoutes.get_theme)
 
-def main():
+def run():
     import argparse
 
     parser=argparse.ArgumentParser(description="Pyuxterm - A powerful cross platform Terminal emulator")
@@ -53,4 +55,4 @@ def main():
     
 
 if __name__ == "__main__":
-    main()
+    run()

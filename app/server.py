@@ -1,7 +1,6 @@
 import pprint
 
 import aiohttp_jinja2
-import hjson
 import jinja2
 import socketio
 import src.urequirements as urequirements
@@ -20,6 +19,27 @@ usocket_config = dict()
 terminal_api = uterm.TerminalCoreApi(rows=50, cols=50)
 
 
+class XtermRoutes:
+
+    async def get_theme(request):
+        theme_name = request.match_info['theme_name']
+
+        theme = uterm.THEMES.get(theme_name.lower(), {"background": "#212121"})
+
+        return web.json_response(theme, content_type='application/json')
+
+
+class UIInterface:
+
+    async def updatedUi(settings: dict) -> bool:
+        await usocket.emit("pty-ui", {"settings": settings}, namespace="/pty")
+        return True
+
+    async def updatedXtermTheme(theme_name: str) -> bool:
+        await usocket.emit("pty-set-theme", {"name": theme_name}, namespace="/pty")
+        return True
+
+
 async def read_and_forward_pty_output() -> None:
     max_read_bytes = 1024 * 20
     while True:
@@ -29,8 +49,13 @@ async def read_and_forward_pty_output() -> None:
             await usocket.emit("pty-output", {"output": output}, namespace="/pty")
 
 
-async def update_ui(settings: dict) -> bool:
-    return settings
+async def on_startup(app):
+    if "cmd" not in usocket_config.keys():
+        usocket_config["cmd"] = uterm.TermUtils.get_split_command(
+            "python3", "")
+
+    if "theme" not in usocket_config.keys():
+        usocket_config["theme"] = uterm.TermUtils.get_theme("default")
 
 
 async def eval_payload(prompt: str, aio: bool) -> str:
@@ -40,11 +65,11 @@ async def eval_payload(prompt: str, aio: bool) -> str:
     return eval(prompt)
 
 
-async def exec_payload(prompt: str, aio: bool) -> str:
+async def exec_payload(prompt: str, aio: bool) -> None:
     if aio:
-        return await exec(prompt)
+        await exec(prompt)
 
-    return exec(prompt)
+    exec(prompt)
 
 
 async def evalRPC(request) -> web.Response:
@@ -71,7 +96,7 @@ async def evalRPC(request) -> web.Response:
 
     if "exec" in payload.keys():
         try:
-            _ = exec_payload(
+            _ = await exec_payload(
                 prompt=payload["exec"][">>>"],
                 aio=payload["exec"]["async"]
             )
@@ -102,12 +127,8 @@ async def evalRPC(request) -> web.Response:
 async def index(request) -> dict:
     """Serve the client-side application."""
 
-    theme = hjson.loads(usocket_config["theme"])
-    bg_color = "#000000"
-    if "background" in theme.keys():
-        bg_color = theme["background"]
-
-    return {'theme': usocket_config["theme"], "cssvar_background": bg_color}
+    theme = uterm.THEMES.get(usocket_config["theme"], {"background": "#212121"})
+    return {"cssvar_background": theme["background"]}
 
 
 @usocket.on("pty-input", namespace="/pty")
@@ -129,11 +150,13 @@ async def connect(sid, environ) -> None:
     terminal_api.spawn(usocket_config["cmd"])
     usocket.start_background_task(target=read_and_forward_pty_output)
 
+    await usocket.emit("pty-set-theme", {"name": usocket_config["theme"]}, namespace="/pty")
+
 
 def run_new_term(command: str = "python3", host: str = "127.0.0.1", port: int = 9990, command_args: str = "", theme: str = "default") -> None:
     usocket_config["cmd"] = uterm.TermUtils.get_split_command(
         command, command_args)
-    usocket_config["theme"] = uterm.TermUtils.get_theme(theme.lower())
+    usocket_config["theme"] = theme.lower()
     web.run_app(app, port=port, host=host)
 
 

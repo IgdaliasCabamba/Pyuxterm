@@ -1,87 +1,113 @@
-
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Uterm</title>
-    <style>
-      :root {
-        --main-bg-color: {{cssvar_background}};
-        --scrollbar-bg-color:transparent;
-        --scrollbar-thumb-bg-color:rgba(250, 250, 250, 0.4);
-        --scrollbar-thumb-hover-bg-color:rgb(250, 250, 250, 0.8)
+
+<head>
+  <meta charset="utf-8" />
+  <title>Uterm</title>
+  <style>
+    :root {
+      --main-bg-color: {
+          {
+          cssvar_background
+        }
       }
-    </style>
-    <link
-      rel="stylesheet"
-      href="/static/ustyle.css"
-    />
-    <link
-      rel="stylesheet"
-      href="/static/packages/xterm/css/xterm.css"
-    />
-  </head>
-  <body>
-    <div id="terminal"></div>
 
-    <!-- xterm -->
-    <script src="/static/packages/xterm/lib/xterm.js"></script>
-    <script src="/static/packages/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
-    <script src="/static/packages/xterm-addon-web-links/lib/xterm-addon-web-links.js"></script>
-    <script src="/static/packages/xterm-addon-search/lib/xterm-addon-search.js"></script>
-    <script src="/static/packages/ajax/libs/socket.io/socket.io.min.js"></script>
+      ;
+      --scrollbar-bg-color:transparent;
+      --scrollbar-thumb-bg-color:rgba(250, 250, 250, 0.4);
+      --scrollbar-thumb-hover-bg-color:rgb(250, 250, 250, 0.8)
+    }
+  </style>
+  <link rel="stylesheet" href="/static/ustyle.css" />
+  <link rel="stylesheet" href="/static/packages/xterm/css/xterm.css" />
+</head>
 
-    <script>
-      const term = new Terminal({
-        cursorBlink: true,
-        macOptionIsMeta: true,
-        scrollback: 1000,
-      });
-      // https://github.com/xtermjs/xterm.js/issues/2941
-      const fit = new FitAddon.FitAddon();
-      term.loadAddon(fit);
-      term.loadAddon(new WebLinksAddon.WebLinksAddon());
-      term.loadAddon(new SearchAddon.SearchAddon());
+<body>
+  <div id="terminal"></div>
 
-      term.open(document.getElementById("terminal"));
-      fit.fit();
-      term.resize(15, 50);
-      fit.fit();
-      
+  <!-- xterm -->
+  <script src="/static/packages/xterm/lib/xterm.js"></script>
+  <script src="/static/packages/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
+  <script src="/static/packages/xterm-addon-web-links/lib/xterm-addon-web-links.js"></script>
+  <script src="/static/packages/xterm-addon-search/lib/xterm-addon-search.js"></script>
+  <script src="/static/packages/ajax/libs/socket.io/socket.io.min.js"></script>
+
+  <script>
+    const term = new Terminal({
+      cursorBlink: true,
+      macOptionIsMeta: true,
+      scrollback: 1000,
+    });
+    // https://github.com/xtermjs/xterm.js/issues/2941
+    const fit = new FitAddon.FitAddon();
+    term.loadAddon(fit);
+    term.loadAddon(new WebLinksAddon.WebLinksAddon());
+    term.loadAddon(new SearchAddon.SearchAddon());
+
+    term.open(document.getElementById("terminal"));
+    fit.fit();
+    term.resize(15, 50);
+    fit.fit();
+
+    term.onData((data) => {
+      //console.log("key pressed in browser:", data);
+      socket.emit("pty-input", { input: data });
+    });
+
+    /*connecting to socket backend*/
+    const socket = io.connect("/pty");
+    const status = document.getElementById("status");
+
+    /*Socket events*/
+    socket.on("pty-output", function (data) {
+      term.write(data.output);
+    });
+
+    socket.on("pty-ui", function (data) {
+      console.log("new ui_values", data.settings);
+    });
+
+    socket.on("pty-set-theme", function (data) {
       //https://xtermjs.org/docs/api/terminal/interfaces/itheme/
-      term.setOption('theme', {{theme | safe}});
+      fetchXtermResource(`/xterm/theme/${data.name}`, (error, itheme) => {
+        if (error)
+          console.log(error)
+        else
+          term.setOption('theme', itheme)
 
-      term.onData((data) => {
-        console.log("key pressed in browser:", data);
-        socket.emit("pty-input", { input: data });
       });
 
-      const socket = io.connect("/pty");
-      const status = document.getElementById("status");
+    });
 
-      socket.on("pty-output", function (data) {
-        console.log("new output received from server:", data.output);
-        term.write(data.output);
-      });
 
-      function fitToscreen() {
-        fit.fit();
-        const dims = { cols: term.cols, rows: term.rows };
-        console.log("sending new dimensions to server's pty", dims);
-        socket.emit("resize", dims);
-      }
+    /*Essential functions*/
+    function fetchXtermResource(url, callback) {
+      fetch(url)
+        .then(response => response.json())
+        .then(json => callback(null, json))
+        .catch(error => callback(error, null))
+    }
 
-      function debounce(func, wait_ms) {
-        let timeout;
-        return function (...args) {
-          const context = this;
-          clearTimeout(timeout);
-          timeout = setTimeout(() => func.apply(context, args), wait_ms);
-        };
-      }
+    function fitToscreen() {
+      fit.fit();
+      const dims = { cols: term.cols, rows: term.rows };
+      console.log("sending new dimensions to server's pty", dims);
+      socket.emit("resize", dims);
+    }
 
-      const wait_ms = 50;
-      window.onresize = debounce(fitToscreen, wait_ms);
-      fitToscreen()
-    </script>
-  </body>
+    function debounce(func, wait_ms) {
+      let timeout;
+      return function (...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait_ms);
+      };
+    }
+
+    const wait_ms = 50;
+    window.onresize = debounce(fitToscreen, wait_ms);
+    fitToscreen()
+
+  </script>
+</body>
+
 </html>

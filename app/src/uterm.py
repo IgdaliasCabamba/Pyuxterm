@@ -5,9 +5,8 @@ import subprocess
 import glob
 import pathlib
 import hjson
-from string import Template
 
-def build_themes():
+def read_themes():
     themes = dict()
     possible_themes = glob.glob(
             os.path.join("/",os.environ["UTERM_ROOT_PATH"],"settings","themes")+"/**.theme.json",
@@ -20,7 +19,7 @@ def build_themes():
             themes[name] = hjson.load(fp)
     return themes
 
-THEMES = build_themes()
+THEMES = read_themes()
 
 IS_UNIX = False
 
@@ -39,15 +38,6 @@ else:
     import winpty #pip install pywinpty    
 
 class TermUtils:
-    
-    def build_theme(theme):
-        template_str = "{"
-            
-        for prop in theme:
-            template_str += "\n"+"\t"*2+prop+" : '$"+prop+"' ,"
-        template_str += "}"
-
-        return Template(template_str).substitute(**theme)
 
     @staticmethod
     def get_split_command(command, command_args):
@@ -56,14 +46,7 @@ class TermUtils:
         else:
             command += command_args
             return command
-    
-    @staticmethod
-    def get_theme(theme_name):
-        if theme_name not in THEMES.keys():
-            theme_name = "default"
 
-        theme = TermUtils.build_theme(THEMES[theme_name])
-        return theme
 
 class TerminalCoreApi:
     def __init__(self, rows, cols):
