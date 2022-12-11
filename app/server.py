@@ -7,6 +7,7 @@ import src.urequirements as urequirements
 import src.uterm as uterm
 from _system import *
 from aiohttp import web
+import rich
 
 urequirements.main()
 
@@ -21,21 +22,30 @@ terminal_api = uterm.TerminalCoreApi(rows=50, cols=50)
 
 class XtermRoutes:
 
-    async def get_theme(request):
+    def update_themes(request) -> web.Response:
+        uterm.XTermSettings.update_themes()
+
+    def post_theme(request) -> web.Response:
+        ...
+
+    async def get_theme(request) -> web.Response:
         theme_name = request.match_info['theme_name']
 
-        theme = uterm.THEMES.get(theme_name.lower(), {"background": "#212121"})
+        theme = uterm.XTERM_SETTINGS.themes.get(
+            theme_name.lower(),
+            uterm.XTermSettings.Defaults.THEME
+        )
 
         return web.json_response(theme, content_type='application/json')
 
 
 class UIInterface:
 
-    async def updatedUi(settings: dict) -> bool:
+    async def updateUi(settings: dict) -> bool:
         await usocket.emit("pty-ui", {"settings": settings}, namespace="/pty")
         return True
 
-    async def updatedXtermTheme(theme_name: str) -> bool:
+    async def updateXtermTheme(theme_name: str) -> bool:
         await usocket.emit("pty-set-theme", {"name": theme_name}, namespace="/pty")
         return True
 
@@ -55,7 +65,7 @@ async def on_startup(app):
             "python3", "")
 
     if "theme" not in usocket_config.keys():
-        usocket_config["theme"] = uterm.TermUtils.get_theme("default")
+        usocket_config["theme"] = "default"
 
 
 async def eval_payload(prompt: str, aio: bool) -> str:
@@ -127,7 +137,10 @@ async def evalRPC(request) -> web.Response:
 async def index(request) -> dict:
     """Serve the client-side application."""
 
-    theme = uterm.THEMES.get(usocket_config["theme"], {"background": "#212121"})
+    theme = uterm.XTERM_SETTINGS.themes.get(
+        usocket_config["theme"],
+        uterm.XTermSettings.Defaults.THEME
+    )
     return {"cssvar_background": theme["background"]}
 
 
@@ -161,5 +174,7 @@ def run_new_term(command: str = "python3", host: str = "127.0.0.1", port: int = 
 
 
 def list_all_themes() -> None:
-    for theme in uterm.THEMES.keys():
-        print(theme)
+    themes = uterm.XTERM_SETTINGS.themes.keys()
+    for theme in themes:
+        rich.print(f"[bold green]{theme}")
+    rich.print(f"[bold yellow]TOTAL[/]: {len(themes)}")

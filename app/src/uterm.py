@@ -5,21 +5,41 @@ import subprocess
 import glob
 import pathlib
 import hjson
+from dataclasses import dataclass
 
-def read_themes():
-    themes = dict()
-    possible_themes = glob.glob(
+class XTermSettings:
+    
+    @dataclass
+    class Defaults:
+        THEME = {"background": "#212121"}
+
+    def __init__(self):
+        self.__themes = self.read_themes()
+    
+    @property
+    def themes(self) -> dict:
+        return self.__themes
+    
+    def update_themes(self) -> None:
+        self.__themes.clear()
+        self.__themes = self.read_themes()
+
+    def read_themes(self) -> dict:
+        themes = dict()
+
+        possible_themes = glob.glob(
             os.path.join("/",os.environ["UTERM_ROOT_PATH"],"settings","themes")+"/**.theme.json",
             recursive=True
         )
-    for file in possible_themes:
-        name = pathlib.Path(file).name
-        name = name.split(".")[0].lower()
-        with open(file, "r") as fp:
-            themes[name] = hjson.load(fp)
-    return themes
+        for file in possible_themes:
+            name = pathlib.Path(file).name
+            name = name.split(".")[0].lower()
+            with open(file, "r") as fp:
+                themes[name] = hjson.load(fp)
+        
+        return themes
 
-THEMES = read_themes()
+XTERM_SETTINGS = XTermSettings()
 
 IS_UNIX = False
 

@@ -6,6 +6,9 @@ app.router.add_static('/static', STATIC_PATH)
 app.router.add_get('/', index)
 app.router.add_post('/', evalRPC)
 app.router.add_get('/xterm/theme/{theme_name}', XtermRoutes.get_theme)
+app.router.add_post('/xterm/theme/{theme_name}', XtermRoutes.post_theme)
+app.router.add_get('/xterm/themes/update', XtermRoutes.update_themes)
+
 
 def run():
     import argparse
