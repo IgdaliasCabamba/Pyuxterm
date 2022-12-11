@@ -30,6 +30,7 @@ hidden_libs = [
         "multidict",
         "socketio",
         "requests",
+        "rich",
         "urllib3",
         "yarl",
         "zipp",

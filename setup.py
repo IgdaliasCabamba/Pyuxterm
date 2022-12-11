@@ -30,6 +30,7 @@ build_exe_options = {
         "multidict",
         "socketio",
         "requests",
+        "rich",
         "urllib3",
         "yarl",
         "zipp",
