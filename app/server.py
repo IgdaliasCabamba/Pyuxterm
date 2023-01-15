@@ -19,6 +19,11 @@ usocket_config = dict()
 
 terminal_api = uterm.TerminalCoreApi(rows=50, cols=50)
 
+class PtyInterface:
+
+    def input_(data:dict) -> None:
+        terminal_api.write(data["input"].encode())
+
 
 class XtermRoutes:
 
@@ -70,16 +75,28 @@ async def on_startup(app):
 
 async def eval_payload(prompt: str, aio: bool) -> str:
     if aio:
-        return await eval(prompt)
+        try:
+            return await eval(prompt)
+        except:
+            return None
 
-    return eval(prompt)
+    try: 
+        return eval(prompt)
+    except: 
+        return None
 
 
 async def exec_payload(prompt: str, aio: bool) -> None:
     if aio:
-        await exec(prompt)
+        try:
+            await exec(prompt)
+        except:
+            pass
 
-    exec(prompt)
+    try:
+        exec(prompt)
+    except:
+        pass
 
 
 async def evalRPC(request) -> web.Response:
