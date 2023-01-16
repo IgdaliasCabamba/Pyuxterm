@@ -21,8 +21,8 @@ terminal_api = uterm.TerminalCoreApi(rows=50, cols=50)
 
 class PtyInterface:
 
-    def input_(data:dict) -> None:
-        terminal_api.write(data["input"].encode())
+    def input_(text:str, *args, **kwargs) -> None:
+        terminal_api.write(text.encode())
 
 
 class XtermRoutes:
