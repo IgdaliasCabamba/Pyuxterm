@@ -22,11 +22,15 @@ class XTermSettings:
         return self.__themes
     
     def add_theme(self, theme_file:str) -> str:
-        name = pathlib.Path(theme_file).name
-        name = name.split(".")[0].lower()
-        with open(theme_file, "r") as fp:
-            self.__themes[name] = hjson.load(fp)
-        return name
+        try:
+            name = pathlib.Path(theme_file).name
+            name = name.split(".")[0].lower()
+            with open(theme_file, "r") as fp:
+                self.__themes[name] = hjson.load(fp)
+            return name
+        
+        except FileNotFoundError:
+            pass
     
     def update_themes(self) -> None:
         self.__themes.clear()
