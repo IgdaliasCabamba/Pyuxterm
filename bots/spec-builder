@@ -1,6 +1,0 @@
-#!/bin/bash
-
-source ~/Ideas/Pyuxterm/pyenv/bin/activate
-cd ~/Ideas/Pyuxterm/app
-pyi-makespec --onefile __main__.py
-pyi-makespec __main__.py

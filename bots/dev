@@ -1,5 +1,0 @@
-#!/bin/bash
-
-source ~/Ideas/Pyuxterm/pyenv/bin/activate
-cd ~/Ideas/Pyuxterm/app
-aiohttp-devtools runserver

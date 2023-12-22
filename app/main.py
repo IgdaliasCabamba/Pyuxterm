@@ -1,5 +1,7 @@
 from _system import *
 from server import *
+from utils import list_all_themes
+from src.rpc import evalRPC
 
 app.on_startup.append(on_startup)
 app.router.add_static('/static', STATIC_PATH)
@@ -44,6 +46,12 @@ def run():
                         help="Enter a theme to uxterm",
                         default="default",
                         type = str)
+
+    parser.add_argument('-ct',
+                        '--custom-theme',
+                        help="Use a custom theme on uxterm",
+                        default="",
+                        type = str)
     
     parser.add_argument('--list-themes', help="List all themes and exit", action='store_true')
 
@@ -53,7 +61,7 @@ def run():
         sys.exit(list_all_themes())    
 
 
-    sys.exit(run_new_term(args.command, args.host, args.port, args.binargs, args.theme))
+    sys.exit(run_new_term(args.command, args.host, args.port, args.binargs, args.theme, args.custom_theme))
 
     
 

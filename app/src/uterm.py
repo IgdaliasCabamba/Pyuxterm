@@ -14,30 +14,33 @@ class XTermSettings:
         THEME = {"background": "#212121"}
 
     def __init__(self):
-        self.__themes = self.read_themes()
+        self.__themes = dict()
+        self.load_themes()
     
     @property
     def themes(self) -> dict:
         return self.__themes
     
+    def add_theme(self, theme_file:str) -> str:
+        name = pathlib.Path(theme_file).name
+        name = name.split(".")[0].lower()
+        with open(theme_file, "r") as fp:
+            self.__themes[name] = hjson.load(fp)
+        return name
+    
     def update_themes(self) -> None:
         self.__themes.clear()
-        self.__themes = self.read_themes()
+        self.__themes = self.load_themes()
 
-    def read_themes(self) -> dict:
-        themes = dict()
+    def load_themes(self) -> None:
 
         possible_themes = glob.glob(
             os.path.join("/",os.environ["UTERM_ROOT_PATH"],"settings","themes")+"/**.theme.json",
             recursive=True
         )
-        for file in possible_themes:
-            name = pathlib.Path(file).name
-            name = name.split(".")[0].lower()
-            with open(file, "r") as fp:
-                themes[name] = hjson.load(fp)
-        
-        return themes
+        for theme_file in possible_themes:
+            self.add_theme(theme_file)
+
 
 XTERM_SETTINGS = XTermSettings()
 

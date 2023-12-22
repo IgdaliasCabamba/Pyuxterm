@@ -1,11 +1,11 @@
 dev:
-	@bots/dev
+	@bots/dev.sh
 
 release:
-	@bots/builder
+	@bots/builder.sh
 
 run:
-	@bots/runner
+	@bots/runner.sh
 
 build-spec:
-	@bots/spec-builder
+	@bots/spec-builder.sh
